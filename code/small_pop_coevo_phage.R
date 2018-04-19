@@ -1,5 +1,5 @@
-### Plate Bottleneck Experiment 2 Analysis
-# Created: 15/4/18 by Jack Common
+### Small population coevolution experiment - phage titre analysis
+# Created: 19/4/18 by Jack Common
 
 rm(list=ls())
 
@@ -109,7 +109,7 @@ timepoint_names_facet = list(
   't5' = '5 d.p.i.'
 )
 
-timepoint_names_legend = c('0', '1', '2', '3', '4', '5')
+timepoint_names_legend = c(seq(0,20,1))
 
 timepoint_labeller = function(variable, value) {
   return(timepoint_names_facet[value])
@@ -118,22 +118,19 @@ timepoint_labeller = function(variable, value) {
 # These vectors just give tidy labels for the figures for experiment 3
 oneclone_IDs <- c('M.1', 'M.2', 'M.3', 'M.4', 'M.5', 'M.6')
 fiveclone_IDs <- c('5.1', '5.2', '5.3', '5.4', '5.5', '5.6')
-fiftyclone_IDs <- c('50.1', '50.2', '50.3', '50.4', '50.5', '50.6')
 
 plate_replicate_names_legend = c('1', '2', '3', '4', '5', '6')
 
-plate_OG_bottleneck = c('1-clone', '5-clone', '50-clone')
+plate_OG_bottleneck = c('1-clone', '5-clone')
 
 plate_bottleneck_names_facet = list(
   '1-clone'      = expression('1-clone'),
-  '5-clone'          = expression('5-clone'),
-  '50-clone'         = expression('50-clone')
+  '5-clone'          = expression('5-clone')
 )
 
 plate_bottleneck_names_legend = c(
   expression('1-clone'), 
-  expression('5-clone'), 
-  expression('50-clone')
+  expression('5-clone')
 )
 
 # Function for experiment 3 bottleneck labelling
@@ -144,10 +141,10 @@ plate_bottleneck_labeller = function(variable, value) {
 pd = position_dodge(0.1)
 
 # Load data and format data
-phage <- read.csv("./Plate_bn_exp_2/data/plate2_counts.csv", header = T)
+phage <- read.csv("./original_data/phage_counts.csv", header = T)
 phage <- select(phage, -cfu)
 phage$ID %<>% as.factor()
-#phage %<>% na.exclude
+phage %<>% na.exclude
 phage$log.pfu <- log10(phage$pfu+1)
 
 mono_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID), 
@@ -215,44 +212,11 @@ fiveclone_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID),
 
 fiveclone_phage_plot
 
-fiftyclone_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID), 
-                               data=subset(phage, bottleneck == '50-clone'))+
-  
-  geom_point(stat='identity', position=pd)+
-  geom_path(stat='identity', position=pd)+
-  
-  labs(x='Days post-infection (d.p.i.)', y=expression(bold("Log"*{}[bold("10")]*" p.f.u ml"*{}^{-1}*"")))+
-  ggtitle('50-clone')+
-  
-  theme_bw()+
-  scale_colour_discrete(name='Replicate',
-                        breaks = fiftyclone_IDs,
-                        labels = plate_replicate_names_legend)+
-  theme(plot.title = element_text(face="bold", hjust=0, size = 16))+
-  theme(axis.title = element_text(face="bold", size=16))+
-  theme(legend.title = element_text(face='bold', size=14))+
-  theme(legend.title.align = 0.5)+
-  theme(legend.position = 'right')+
-  theme(legend.key.width = unit(2, 'cm'))+
-  theme(legend.key.height = unit(0.5, 'cm'))+
-  theme(strip.text = element_text(face='bold', size=14))+
-  
-  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5'),
-                   labels=c('0', '1', '2', '3', '4', '5'))+
-  scale_y_continuous(breaks=c(seq(0,12,1)))+
-  coord_cartesian(ylim=c(0, 12.07918))+
-  
-  theme(axis.text = element_text(size=12))+
-  theme(legend.text = element_text(size=12))
-
-fiftyclone_phage_plot
-
 ## Arrange all the phage titer plots into one using plot_grid
 mono_phage_plot <- mono_phage_plot + theme(plot.margin = unit(c(2,2,0,1), 'pt'))
 fiveclone_phage_plot <- fiveclone_phage_plot + theme(plot.margin = unit(c(2,2,0,1), 'pt'))
-fiftyclone_phage_plot <- fiftyclone_phage_plot + theme(plot.margin = unit(c(0,2,2,1), 'pt'))
 
 sum.fig <- plot_grid(mono_phage_plot+labs(x='')+theme(legend.position = 'none'), 
-                   fiveclone_phage_plot+labs(y='', x='')+theme(legend.position = 'none'), 
-                   fiftyclone_phage_plot+theme(legend.position = 'none'))
+                   fiveclone_phage_plot+theme(legend.position = 'none'),
+                   ncol=1, nrow=2, align = "hv")
 sum.fig
