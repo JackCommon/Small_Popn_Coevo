@@ -202,8 +202,8 @@ fiveclone_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID),
   theme(legend.key.height = unit(0.5, 'cm'))+
   theme(strip.text = element_text(face='bold', size=14))+
   
-  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5'),
-                   labels=c('0', '1', '2', '3', '4', '5'))+
+  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5', 't6'),
+                   labels=c('0', '1', '2', '3', '4', '5', '6'))+
   scale_y_continuous(breaks=c(seq(0,12,1)))+
   coord_cartesian(ylim=c(0,12))+
   
