@@ -169,8 +169,8 @@ mono_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID),
   theme(legend.key.height = unit(0.5, 'cm'))+
   theme(strip.text = element_text(face='bold', size=14))+
   
-  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8'),
-                   labels=c('0', '1', '2', '3', '4', '5', '6', '7', '8'))+
+  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9'),
+                   labels=c('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'))+
   
   scale_y_continuous(breaks=c(seq(0,12,1)))+
   coord_cartesian(ylim=c(0, 12))+
@@ -202,8 +202,8 @@ fiveclone_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID),
   theme(legend.key.height = unit(0.5, 'cm'))+
   theme(strip.text = element_text(face='bold', size=14))+
   
-  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8'),
-                   labels=c('0', '1', '2', '3', '4', '5', '6', '7', '8'))+
+  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9'),
+                   labels=c('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'))+
   scale_y_continuous(breaks=c(seq(0,12,1)))+
   coord_cartesian(ylim=c(0,12))+
   
@@ -245,10 +245,10 @@ jpeg("./figs/survplot.jpg", width=20, height=15, units="in", res=300)
 par(mfrow=c(1,1), xpd=TRUE, oma=c(1.5,2.5,1,1), mai=c(1,1,1,1.2), bty="l", pty="s")
 
 plot(survfit(Surv(phage$time_to_death,phage$status)~bottleneck), lty=c(1,3,5), lwd=c(5,5,5),
-     ylab="", xlab="", axes=FALSE, ylim=c(0,1), xlim=c(0,8))
+     ylab="", xlab="", axes=FALSE, ylim=c(0,1), xlim=c(0,10))
 
 axis(1, tcl=-0.1, pos=0, cex.axis=1, lwd=c(3), cex.axis=2)
-axis(1, at=3.5, lab="Days post-infection (d.p.i.)", tcl=0, line=2, cex.axis=3)
+axis(1, at=4.5, lab="Days post-infection (d.p.i.)", tcl=0, line=2, cex.axis=3)
 
 axis(2, tcl=-0.1, pos=-0, cex.axis=1, las=2, lwd=c(3), cex.axis = 2)
 axis(2, at=0.5, lab="Proportion of phage\npopulations surviving", line=4, cex.axis=3, tcl=0)
@@ -258,7 +258,7 @@ legend(0.8,0.5, title=c("Bottleneck"),
        bty="o", lty=c(1,3,5), lwd=c(5,5,5), cex=3, adj=0)
 dev.off()
 
-# Cox proportional hazards model
+ # Cox proportional hazards model
 model3<-coxph(Surv(time_to_death,status)~bottleneck)
 summary(model3)
 
