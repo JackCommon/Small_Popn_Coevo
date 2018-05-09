@@ -1,7 +1,17 @@
-### Small population coevolution experiment - phage titre analysis
+### Small population coevolution experiment - phage titre analysis ####
 # Created: 19/4/18 by Jack Common
 
 rm(list=ls())
+
+#### Dependencies ####
+#install.packages("ggplot2")
+#install.packages("scales")
+#install.packages("reshape2")
+#install.packages("dplyr")
+#install.packages("tidyr")
+#install.packages("magrittr")
+#install.packages("cowplot")
+#install.packages("MuMIn")
 
 library(ggplot2)
 library(scales)
@@ -10,8 +20,11 @@ library(dplyr)
 library(tidyr)
 library(magrittr)
 library(cowplot)
+library(MuMIn)
 
-# Extracts the intercept coefficient (mean) and 95% CIs from the GLM objects, with added functionality to copy those to the clipboard for easier input to summary dataframes
+#### Stats functions ####
+# Extracts the intercept coefficient (mean) and 95% CIs from the GLM objects, 
+#with added functionality to copy those to the clipboard for easier input to summary dataframes
 
 # Enable this if using Ubuntu
 #clipboard <- function(x, sep="\t", row.names=FALSE, col.names=FALSE){
@@ -51,7 +64,9 @@ CopyCIs <- function(model){
 }
 
 ## Compare AIC values for model fit
-# This function extracts the AIC for each GLM, and then compares the absolute relative differences for each AIC to the model with the lowest AIC. This acts as a measure of model fit. More can be found at: http://faculty.washington.edu/skalski/classes/QERM597/papers_xtra/Burnham%20and%20Anderson.pdf
+# This function extracts the AIC for each GLM, and then compares the absolute relative 
+# differences for each AIC to the model with the lowest AIC. This acts as a measure of 
+# model fit. More can be found at: http://faculty.washington.edu/skalski/classes/QERM597/papers_xtra/Burnham%20and%20Anderson.pdf
 
 compare_AICs = function(df){          # df is a dataframe of AIC values 
   print(df)                           # prints the origina AIC values 
@@ -62,40 +77,21 @@ compare_AICs = function(df){          # df is a dataframe of AIC values
   }
 }
 
-## Pseudo-R2 from residual and null deviance
-# Although there are many ways of extracting an R2 from a GLM, two are used here. For GLMs with a normal error distribution, I use a simple calculation of residual.deviance/null.deviance. For logistic regressions (i.e. a binomial error structure), I use McFadden's pseudo-R2 (1-log likelihood(model)/log likelihood(null model)) [see Hosmer et al. (2013) "Applied Logistic Regression" 3rd ed.]
-
-pseudo_R2 = function(test.model, null.model){
-  if (test.model$family$family == 'gaussian'){
-    print(test.model$formula, quote = F)
-    print('McFadden\'s pseudo-R2 for normally-distributed data:', quote=F)
-    print( (test.model$deviance/test.model$null.deviance) , quote = F)
-  }
-  if (test.model$family == 'binomial'){
-    print(test.model$formula, quote=F)
-    print('McFadden\'s pseudo-R2 for logistic regression:', quote=F)
-    print( (1-logLik(test.model)/logLik(null.model) ), quote=F)
-  }
-  if (test.model$family == 'poisson'){
-    print(test.model$formula, quote=F)
-    print('McFaddens\'s pseudo-R2:', quote=F)
-    print( (test.model$deviance/test.model$df.residual), quote =F)
-    print('Ratio of deviance to residual DF (to check fit to (quasi)poisson distribution):', quote=F)
-    print( test.model$null.deviance/test.model$deviance, quote=F)
-  }
-}
-
-### Convert log-odds to probabilities from binomial GLM output
+## Convert log-odds to probabilities from binomial GLM output
 logit2prob <- function(logit){
   odds <- exp(logit)
   prob <- odds / (1 + odds)
   return(prob)
 }
 
-## Functions and graphical stuff
-# Next I've written some of simple functions that make the graph labels more human-readable. There are also some objects that enable these functions to work properly. *Importantly*, there are different ones for the different experiments, which have been indicated in the comments.
+#### Graphics functions & objects ####
+# Next I've written some of simple functions that make the graph labels more 
+# human-readable. There are also some objects that enable these functions to 
+# work properly. *Importantly*, there are different ones for the different experiments, 
+# which have been indicated in the comments.
 
-# Lists of the original names (as found in the source data) of the levels of each factor. These are used for the breaks() function in ggplots
+# Lists of the original names (as found in the source data) of the levels of each factor. 
+# These are used for the breaks() function in ggplots
 
 ## Timepoints are shared across experiments
 OG_timepoints = c('t0', 't1', 't2', 't3', 't4', 't5')
@@ -140,7 +136,7 @@ plate_bottleneck_labeller = function(variable, value) {
 
 pd = position_dodge(0.1)
 
-# Load data and format data
+##### Data ####
 phage <- read.csv("./original_data/phage_counts.csv", header = T)
 phage <- select(phage, -cfu)
 phage$ID %<>% as.factor()
@@ -159,6 +155,7 @@ phage$timepoint %<>% relevel(ref="t2")
 phage$timepoint %<>% relevel(ref="t1")
 phage$timepoint %<>% relevel(ref="t0")
 
+#### Raw phage titre by replicate plots ####
 mono_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID), 
                          data=subset(phage, bottleneck == '1-clone'))+
   
@@ -233,13 +230,16 @@ sum.fig <- plot_grid(mono_phage_plot+labs(x='')+theme(legend.position = 'none'),
                    ncol=1, nrow=2, align = "hv")
 sum.fig
 
+# Cowplot blocks ggsave so need to detach it
 detach("package:cowplot")
 
 ggsave("phage_fig.png", sum.fig, path="./figs/", device="png",
        width=25, height=20, unit=c("cm"), dpi=300)
 
-### Survival analysis
+#### Survival analysis #####
 
+# Need to load these packages after the above as some important functions can be 
+# blocked
 library(survival)
 library(rms)
 library(car)
@@ -250,7 +250,7 @@ phage<-read.csv("./summary_data/survival_data.csv", header=T)
 attach(phage)
 names(phage)
 
-# KM ~ group
+#### Keplan-Meier graph ####
 summary(KM<-survfit(Surv(time_to_death,status)~bottleneck))
 
 jpeg("./figs/survplot.jpg", width=20, height=15, units="in", res=300)
@@ -270,7 +270,7 @@ legend(0.8,0.5, title=c("Bottleneck"),
        bty="o", lty=c(1,3,5), lwd=c(5,5,5), cex=3, adj=0)
 dev.off()
 
- # Cox proportional hazards model
+#### Cox proportional hazards model ####
 model3<-coxph(Surv(time_to_death,status)~bottleneck)
 summary(model3)
 
@@ -292,3 +292,4 @@ exp1.HRs <- data.frame(HRs, SEs, Z, P)
 clip = pipe('pbcopy', 'w')
 write.table(exp1.HRs, file=clip, sep='\t', row.names = F, col.names = F)
 close(clip)
+
