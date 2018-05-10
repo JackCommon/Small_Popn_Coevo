@@ -143,6 +143,7 @@ phage$ID %<>% as.factor()
 phage %<>% na.exclude
 phage$log.pfu <- log10(phage$pfu+1)
 
+phage$timepoint %<>% relevel(ref="t11")
 phage$timepoint %<>% relevel(ref="t10")
 phage$timepoint %<>% relevel(ref="t9")
 phage$timepoint %<>% relevel(ref="t8")
@@ -178,8 +179,12 @@ mono_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID),
   theme(legend.key.height = unit(0.5, 'cm'))+
   theme(strip.text = element_text(face='bold', size=14))+
   
-  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10'),
-                   labels=c('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))+
+  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5', 
+                            't6', 't7', 't8', 't9', 't10',
+                            't11'),
+                   labels=c('0', '1', '2', '3', '4', '5', 
+                            '6', '7', '8', '9', '10',
+                            '11'))+
   
   scale_y_continuous(breaks=c(seq(0,12,1)))+
   coord_cartesian(ylim=c(0, 12))+
@@ -211,8 +216,12 @@ fiveclone_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID),
   theme(legend.key.height = unit(0.5, 'cm'))+
   theme(strip.text = element_text(face='bold', size=14))+
   
-  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10'),
-                   labels=c('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'))+
+  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5',
+                            't6', 't7', 't8', 't9', 't10',
+                            't11'),
+                   labels=c('0', '1', '2', '3', '4', '5',
+                            '6', '7', '8', '9', '10',
+                            '11'))+
   scale_y_continuous(breaks=c(seq(0,12,1)))+
   coord_cartesian(ylim=c(0,12))+
   
@@ -240,6 +249,12 @@ ggsave("phage_fig.png", sum.fig, path="./figs/", device="png",
 
 # Need to load these packages after the above as some important functions can be 
 # blocked
+#installl.packages("survival")
+#installl.packages("rms")
+#installl.packages("car")
+#installl.packages("multcomp")
+#installl.packages("relaimpo")
+
 library(survival)
 library(rms)
 library(car)
@@ -257,10 +272,10 @@ jpeg("./figs/survplot.jpg", width=20, height=15, units="in", res=300)
 par(mfrow=c(1,1), xpd=TRUE, oma=c(1.5,2.5,1,1), mai=c(1,1,1,1.2), bty="l", pty="s")
 
 plot(survfit(Surv(phage$time_to_death,phage$status)~bottleneck), lty=c(1,3,5), lwd=c(5,5,5),
-     ylab="", xlab="", axes=FALSE, ylim=c(0,1), xlim=c(0,10))
+     ylab="", xlab="", axes=FALSE, ylim=c(0,1), xlim=c(0,12))
 
 axis(1, tcl=-0.1, pos=0, cex.axis=1, lwd=c(3), cex.axis=2)
-axis(1, at=5, lab="Days post-infection (d.p.i.)", tcl=0, line=2, cex.axis=3)
+axis(1, at=6, lab="Days post-infection (d.p.i.)", tcl=0, line=2, cex.axis=3)
 
 axis(2, tcl=-0.1, pos=-0, cex.axis=1, las=2, lwd=c(3), cex.axis = 2)
 axis(2, at=0.5, lab="Proportion of phage\npopulations surviving", line=4, cex.axis=3, tcl=0)
