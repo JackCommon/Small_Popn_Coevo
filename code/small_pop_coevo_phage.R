@@ -143,6 +143,7 @@ phage$ID %<>% as.factor()
 phage %<>% na.exclude
 phage$log.pfu <- log10(phage$pfu+1)
 
+phage$timepoin %<>% relevel(ref="t12")
 phage$timepoint %<>% relevel(ref="t11")
 phage$timepoint %<>% relevel(ref="t10")
 phage$timepoint %<>% relevel(ref="t9")
@@ -181,10 +182,10 @@ mono_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID),
   
   scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5', 
                             't6', 't7', 't8', 't9', 't10',
-                            't11'),
+                            't11', 't12'),
                    labels=c('0', '1', '2', '3', '4', '5', 
                             '6', '7', '8', '9', '10',
-                            '11'))+
+                            '11', "12"))+
   
   scale_y_continuous(breaks=c(seq(0,12,1)))+
   coord_cartesian(ylim=c(0, 12))+
@@ -218,10 +219,10 @@ fiveclone_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID),
   
   scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5',
                             't6', 't7', 't8', 't9', 't10',
-                            't11'),
+                            't11', 't12'),
                    labels=c('0', '1', '2', '3', '4', '5',
                             '6', '7', '8', '9', '10',
-                            '11'))+
+                            '11', "12"))+
   scale_y_continuous(breaks=c(seq(0,12,1)))+
   coord_cartesian(ylim=c(0,12))+
   
@@ -293,18 +294,4 @@ model3$loglik
 
 anova(model3)
 tapply(predict(model3),bottleneck,mean)
-
-exp1.tukey <- summary(glht(model3, linfct = mcp(bottleneck = "Tukey")))
-class(exp(exp1.tukey$test$coefficients))
-exp1.tukey
-
-HRs <- exp(exp1.tukey$test$coefficients)
-SEs <- exp(exp1.tukey$test$sigma)
-Z <- exp1.tukey$test$tstat
-P <- exp1.tukey$test$pvalues
-
-exp1.HRs <- data.frame(HRs, SEs, Z, P)
-clip = pipe('pbcopy', 'w')
-write.table(exp1.HRs, file=clip, sep='\t', row.names = F, col.names = F)
-close(clip)
 
