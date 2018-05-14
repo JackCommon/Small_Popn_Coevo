@@ -143,7 +143,7 @@ phage$ID %<>% as.factor()
 phage %<>% na.exclude
 phage$log.pfu <- log10(phage$pfu+1)
 
-phage$timepoin %<>% relevel(ref="t12")
+phage$timepoint %<>% relevel(ref="t12")
 phage$timepoint %<>% relevel(ref="t11")
 phage$timepoint %<>% relevel(ref="t10")
 phage$timepoint %<>% relevel(ref="t9")
@@ -250,11 +250,11 @@ ggsave("phage_fig.png", sum.fig, path="./figs/", device="png",
 
 # Need to load these packages after the above as some important functions can be 
 # blocked
-#installl.packages("survival")
-#installl.packages("rms")
-#installl.packages("car")
-#installl.packages("multcomp")
-#installl.packages("relaimpo")
+#install.packages("survival")
+#install.packages("rms")
+#install.packages("car")
+#install.packages("multcomp")
+#install.packages("relaimpo")
 
 library(survival)
 library(rms)
