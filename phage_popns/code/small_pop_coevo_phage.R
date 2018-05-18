@@ -137,7 +137,7 @@ plate_bottleneck_labeller = function(variable, value) {
 pd = position_dodge(0.1)
 
 ##### Data ####
-phage <- read.csv("./original_data/phage_counts.csv", header = T)
+phage <- read.csv("./phage_popns/original_data/phage_counts.csv", header = T)
 phage <- select(phage, -cfu)
 phage$ID %<>% as.factor()
 phage %<>% na.exclude
@@ -262,7 +262,7 @@ library(car)
 library(multcomp)
 library(relaimpo)
 
-phage<-read.csv("./summary_data/survival_data.csv", header=T)
+phage<-read.csv("./phage_popns/original_data/survival_data.csv", header=T)
 attach(phage)
 names(phage)
 
