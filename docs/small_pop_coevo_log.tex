@@ -1,0 +1,53 @@
+%Small_pop_coevo_log.tex
+\documentclass [12pt, a4paper, twoside]  {article}
+\usepackage [a4paper, left=30mm, right=30mm, top=20mm, bottom=20mm] {geometry}
+
+%%% Paragraph formatting
+\setlength{\parindent}{0pt} %new paragraph indent is 0
+\setlength{\parskip}{1em}	%new paragraphs are indicated by a new line
+\renewcommand{\baselinestretch}{1.2}
+
+%%% Making sure line numbers are included
+\RequirePackage{lineno}
+\usepackage{lineno}
+
+%%% Arranging graphics parameters
+\usepackage [utf8] {inputenc}
+\pagenumbering{gobble}
+
+\title{
+	\raggedright
+	\Huge{\textbf{Small Population Coevolution Experiment}}\\
+	\Large{Log, notes, and reminders}\\
+	\Large{Jack Common}\\
+	\vspace{.5cm}
+}
+\date{\vspace{-12ex}}
+
+%% My own commands to make things a bit quicker to type
+\newcommand{\super}{\textsuperscript}
+\newcommand{\sub}{\textsubscript}
+
+\begin{document}
+\maketitle
+
+\section*{Time-shift assay replication}
+Identified which replicates in both treatments had phage until T5 and T7. 
+
+1-clone:
+\begin{itemize}
+	\item T5 = 1, 3, 5, 7, 8, 9, 10, 11 ($N=8$)
+	\item T7 = 1, 3, 5, 7, 8, 9, 10, 11 ($N=7$)
+\end{itemize}
+
+5-clone:
+\begin{itemize}
+	\item T5: 1, 2, 3, 4, 6, 7, 9, 10, 12 ($N=9$)
+	\item T7: 2, 3, 6, 7, 9 ($N=5$)
+\end{itemize}
+
+Face a trade-off between sampling from more timepoints but with a smaller $N$, or increasing $N$ but sampling from fewer timepoints. Conducted a power analysis using the \texttt{pwr} package in R. Derived reference Cohen's $D$ values from Morley et al (2018) (small effect) and Hall et al (2011) (large effect). 1-clone, small ES (0.57): $D\sub{1,6}=0.43$; 1-clone, large ES (1.28): $D\sub{1,6}=0.76$. 5-clone, small ES (0.57): $D\sub{1,4}=0.30$; 5-clone, large ES (1.28): $D\sub{1,4}=0.56$.
+The smaller sample sizes are therefore appropriate, but bear in mind this only relates to within-treatment comparisons across timepoints. The unbalanced $N$ between treatments will have to be taken into account when making inferences about treatment effect. 
+
+
+\end{document}

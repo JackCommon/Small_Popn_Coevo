@@ -3,5 +3,4 @@
 .RData
 .Rhistory
 .DS_Store
-survplot.jpg
-figs
+plots_for_presentation.R
