@@ -38,11 +38,11 @@ model_stats = function(model){
   conf = confint(model, level=c(0.95))
   print(c(sum[1]))
   print(c(conf[1,1]))
-  print(c(conf[1,2]))
   
   stats = data.frame(conf[1,1], conf[1,2])
   #clipboard(stats)
   clip = pipe('pbcopy', 'w')
+  print(c(conf[1,2]))
   write.table(stats, file=clip, sep='\t', row.names = F, col.names = F)
   close(clip)
   print('Coefficients copied to the clipboard')
@@ -137,12 +137,13 @@ plate_bottleneck_labeller = function(variable, value) {
 pd = position_dodge(0.1)
 
 ##### Data ####
-phage <- read.csv("./phage_popns/original_data/phage_counts.csv", header = T)
-phage <- select(phage, -cfu)
+phage <- read.csv("./populations/original_data/phage_counts.csv", header = T)
+#phage <- select(phage, -cfu)
 phage$ID %<>% as.factor()
-phage %<>% na.exclude
-phage$log.pfu <- log10(phage$pfu+1)
+#phage %<>% na.exclude
+#phage$log.pfu <- log10(phage$pfu+1)
 
+phage$timepoint %<>% relevel(ref="t16")
 phage$timepoint %<>% relevel(ref="t15")
 phage$timepoint %<>% relevel(ref="t14")
 phage$timepoint %<>% relevel(ref="t13")
@@ -161,16 +162,17 @@ phage$timepoint %<>% relevel(ref="t1")
 phage$timepoint %<>% relevel(ref="t0")
 
 #### Raw phage titre by replicate plots ####
-mono_phage_plot <- ggplot(aes(y=log.pfu, x=timepoint, group=ID), 
+mono_phage_plot <- ggplot(aes(y=pfu+1, x=timepoint, group=ID), 
                          data=subset(phage, bottleneck == '1-clone'))+
   
-  geom_point(stat='identity', position=pd)+
+  #geom_point(stat='identity', position=pd)+
   geom_path(stat='identity', position=pd)+
+  geom_line(aes(y=cfu+1), colour="blue", linetype=1)+
   
-  labs(x='Days post-infection (d.p.i.)', y=expression(bold("Log"*{}[bold("10")]*" p.f.u ml"*{}^{-1}*"")))+
+  labs(x='Days post-infection', y=expression(bold("Pfu/Cfu ml"*{}^{-1}*"")))+
   ggtitle('1-clone')+
   
-  theme_bw()+
+  theme_cowplot()+
   scale_colour_discrete(name='Replicate',
                         breaks = oneclone_IDs,
                         labels = plate_replicate_names_legend)+
@@ -185,29 +187,36 @@ mono_phage_plot <- ggplot(aes(y=log.pfu, x=timepoint, group=ID),
   
   scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5', 
                             't6', 't7', 't8', 't9', 't10',
-                            't11', 't12', "t13", "t14", "t15"),
+                            't11', 't12', "t13", "t14", "t15",
+                            "t16", "t17", "t18", "t19", "t20"),
                    labels=c('0', '1', '2', '3', '4', '5', 
                             '6', '7', '8', '9', '10',
-                            '11', "12", "13", "14", "15"))+
+                            '11', "12", "13", "14", "15",
+                            "16", "17", "18", "19", "20"))+
   
-  scale_y_continuous(breaks=c(seq(0,12,1)))+
-  coord_cartesian(ylim=c(0, 12))+
+  # scale_y_continuous(breaks=c(seq(0,12,1)))+
+  # coord_cartesian(ylim=c(0, 12))+
+  scale_y_continuous(trans = 'log10',
+                     breaks = trans_breaks('log10', function(x) 10^x),
+                     labels = trans_format('log10', math_format(10^.x)))+
   
   theme(axis.text = element_text(size=12))+
-  theme(legend.text = element_text(size=12))
+  theme(legend.text = element_text(size=12))+
+  NULL
 
 mono_phage_plot
 
-fiveclone_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID), 
+fiveclone_phage_plot = ggplot(aes(y=pfu+1, x=timepoint, group=ID), 
                               data=subset(phage, bottleneck == '5-clone'))+
   
-  geom_point(stat='identity', position=pd)+
+ # geom_point(stat='identity', position=pd)+
   geom_path(stat='identity', position=pd)+
+  geom_line(aes(y=cfu+1), colour="blue", linetype=1)+
   
-  labs(x='Days post-infection (d.p.i.)', y=expression(bold("Log"*{}[bold("10")]*" p.f.u ml"*{}^{-1}*"")))+
+  labs(x='Days post-infection', y=expression(bold("Pfu/Cfu ml"*{}^{-1}*"")))+
   ggtitle('5-clone')+
   
-  theme_bw()+
+  theme_cowplot()+
   scale_colour_discrete(name='Replicate',
                         breaks = fiveclone_IDs,
                         labels = plate_replicate_names_legend)+
@@ -220,17 +229,23 @@ fiveclone_phage_plot = ggplot(aes(y=log.pfu, x=timepoint, group=ID),
   theme(legend.key.height = unit(0.5, 'cm'))+
   theme(strip.text = element_text(face='bold', size=14))+
   
-  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5',
+  scale_x_discrete(breaks=c('t0', 't1', 't2', 't3', 't4', 't5', 
                             't6', 't7', 't8', 't9', 't10',
-                            't11', 't12', "t13", "t14", "t15"),
-                   labels=c('0', '1', '2', '3', '4', '5',
+                            't11', 't12', "t13", "t14", "t15",
+                            "t16", "t17", "t18", "t19", "t20"),
+                   labels=c('0', '1', '2', '3', '4', '5', 
                             '6', '7', '8', '9', '10',
-                            '11', "12", "13", "14", "15"))+
-  scale_y_continuous(breaks=c(seq(0,12,1)))+
-  coord_cartesian(ylim=c(0,12))+
+                            '11', "12", "13", "14", "15",
+                            "16", "17", "18", "19", "20"))+
+  #scale_y_continuous(breaks=c(seq(0,12,1)))+
+  scale_y_continuous(trans = 'log10',
+                     breaks = trans_breaks('log10', function(x) 10^x),
+                     labels = trans_format('log10', math_format(10^.x)))+
+  #coord_cartesian(ylim=c(0,12))+
   
   theme(axis.text = element_text(size=12))+
-  theme(legend.text = element_text(size=12))
+  theme(legend.text = element_text(size=12))+
+  NULL
 
 fiveclone_phage_plot
 
@@ -238,13 +253,15 @@ fiveclone_phage_plot
 mono_phage_plot <- mono_phage_plot + theme(plot.margin = unit(c(2,2,0,1), 'pt'))
 fiveclone_phage_plot <- fiveclone_phage_plot + theme(plot.margin = unit(c(2,2,0,1), 'pt'))
 
-sum.fig <- plot_grid(mono_phage_plot+labs(x='')+theme(legend.position = 'none'), 
+sum.fig <- plot_grid(mono_phage_plot+labs(x='')+theme(legend.position = 'none',
+                                                      panel.grid = element_blank(),
+                                                      panel.grid.minor = element_blank(), 
+                                                      panel.grid.major = element_blank(),
+                                                      panel.background = element_blank(),
+                                                      plot.background = element_rect(fill = "transparent",colour = NA)),
                    fiveclone_phage_plot+theme(legend.position = 'none'),
                    ncol=1, nrow=2, align = "hv")
 sum.fig
-
-# Cowplot blocks ggsave so need to detach it
-detach("package:cowplot")
 
 ggsave("phage_fig.png", sum.fig, path="./figs/", device="png",
        width=28, height=20, unit=c("cm"), dpi=300)
@@ -265,7 +282,7 @@ library(car)
 library(multcomp)
 library(relaimpo)
 
-phage<-read.csv("./phage_popns/original_data/survival_data.csv", header=T)
+phage<-read.csv("./populations/original_data/survival_data.csv", header=T)
 attach(phage)
 names(phage)
 
@@ -276,15 +293,15 @@ jpeg("./figs/survplot.jpg", width=20, height=15, units="in", res=300)
 par(mfrow=c(1,1), xpd=TRUE, oma=c(1.5,2.5,1,1), mai=c(1,1,1,1.2), bty="l", pty="s")
 
 plot(survfit(Surv(phage$time_to_death,phage$status)~bottleneck), lty=c(1,3,5), lwd=c(5,5,5),
-     ylab="", xlab="", axes=FALSE, ylim=c(0,1), xlim=c(0,16))
+     ylab="", xlab="", axes=FALSE, ylim=c(0,1), xlim=c(0,20))
 
 axis(1, tcl=-0.1, pos=0, cex.axis=1, lwd=c(3), cex.axis=2)
-axis(1, at=8, lab="Days post-infection (d.p.i.)", tcl=0, line=2, cex.axis=3)
+axis(1, at=10, lab="Days post-infection", tcl=0, line=2, cex.axis=3)
 
 axis(2, tcl=-0.1, pos=-0, cex.axis=1, las=2, lwd=c(3), cex.axis = 2)
 axis(2, at=0.5, lab="Proportion of phage\npopulations surviving", line=4, cex.axis=3, tcl=0)
 
-legend(0.8,0.5, title=c("Bottleneck"),
+legend(11.5,0.7, title=c("Bottleneck"),
        legend=c("1-clone", "5-clone"), 
        bty="o", lty=c(1,3,5), lwd=c(5,5,5), cex=3, adj=0)
 dev.off()
@@ -298,3 +315,92 @@ model3$loglik
 anova(model3)
 tapply(predict(model3),bottleneck,mean)
 
+
+#### Binomial survival analysis ####
+#install.packages("ggfortify")
+#install.packages("survminer")
+library(ggfortify)
+library(survminer)
+
+data <- read.csv("./populations/original_data/binomial_survival_data.csv", header = TRUE)
+
+m.null <- glm(cbind(Alive, Dead)~1,family=binomial, data=data)
+m1 <- glm(cbind(Alive, Dead)~Time,family=binomial, data=data)
+m2 <- glm(cbind(Alive, Dead)~Treatment,family=binomial, data=data)
+m.global <- glm(cbind(Alive, Dead)~Treatment*Time,family=binomial, data=data)
+
+par(mfrow=c(2,2))
+plot(m.null)
+plot(m1)
+plot(m2)
+plot(m.global)
+
+AIC(m.null, m1, m2, m.global) %>% compare_AICs()
+
+summary(m.global)
+anova(m.null, m1, m2, m.global,test="Chisq")
+summary(glht(m.global, linfct = mcp(Treatment = "Tukey")))
+
+m.global$coef[1] 
+m.global$coef[2] 
+m.global$coef[3] 
+
+confint(m.global)
+
+range(data$Time)
+n<-seq(0,20,length.out=1000)
+length(n)
+intercept_TR1<-m.global$coef[1]
+intercept_TR2<-m.global$coef[1]+m.global$coef[2]
+lower_TR1<-confint(m.global)[1]
+lower_TR2<-confint(m.global)[1]+confint(m.global)[2]
+upper_TR1<-confint(m.global)[5]
+upper_TR2<-confint(m.global)[5]+confint(m.global)[6]
+#slope_Time<-m.global$coef[3]
+slope_TR1 <- m.global$coef[3]
+slope_TR2 <- m.global$coef[3]+m.global$coef[4]
+slope_lower<-confint(m.global)[3]
+slope_upper<-confint(m.global)[6]
+
+#fitted_TR1<-exp(intercept_TR1+slope_Time*n)/(1+exp(intercept_TR1+slope_Time*n))
+#fitted_TR2<-exp(intercept_TR2+slope_Time*n)/(1+exp(intercept_TR2+slope_Time*n))
+fitted_TR1<-exp(intercept_TR1+slope_TR1*n)/(1+exp(intercept_TR1+slope_TR1*n))
+fitted_TR2<-exp(intercept_TR2+slope_TR2*n)/(1+exp(intercept_TR2+slope_TR2*n))
+
+fitted_lower_TR1<-exp(lower_TR1+slope_lower*n)/(1+exp(lower_TR1+slope_lower*n))
+fitted_upper_TR1<-exp(upper_TR1+slope_upper*n)/(1+exp(upper_TR1+slope_upper*n))
+fitted_lower_TR2<-exp(lower_TR2+slope_lower*n)/(1+exp(lower_TR2+slope_lower*n))
+fitted_upper_TR2<-exp(upper_TR2+slope_upper*n)/(1+exp(upper_TR2+slope_upper*n))
+
+par(mfrow=c(1,1))
+plot(data$Time, data$Alive/(data$Alive+data$Dead), xlim=c(0,20))
+points(fitted_TR1~n, type="l")
+points(fitted_TR2~n, type="l", col="red")
+points(fitted_lower_TR1~n, type="l", col="grey")
+points(fitted_upper_TR1~n, type="l", col="grey")
+points(fitted_lower_TR2~n, type="l", col="grey")
+points(upper_TR2~n, type="l", col="grey")
+
+par(las=1)
+mar.default <- c(5,4,4,2) + 0.1
+par(mar = mar.default + c(4, 4, 4, 4)) 
+
+jpeg("./figs/surv_proportional.jpg", width=20, height=15, units="in", res=300)
+
+plot(data$Time, data$Alive/(data$Alive+data$Dead),axes=FALSE, type="n",ylab = "",xlab = "", xlim=c(0,20), cex.axis=2.5, cex.lab=2.5)
+axis(side = 1, lwd = 3, cex.axis=2.5, pos = c(0,1), tck= -.01)
+axis(side = 2, lwd = 3, cex.axis=2.5, pos = c(-.15,1))
+title(ylab="Mean proportion surviving",line=6, cex.lab=2.5, tcl=0)
+title(xlab="Days post-infection (d.p.i.)",line=4, cex.lab=2.5, tcl=0)
+
+points(fitted_TR2~n, type="l", lwd=4,lty=1, col="#718B2E")
+points(fitted_TR1~n, type="l", lwd=4,lty=1, col= "#D39200")
+
+legend(1, 0.3, c("5-clone"),pch = c(19),lty = c(1), col=c('#718B2E'),lwd=4, cex=2,bty='n')
+legend(1, 0.4, c("1-clone"),pch = c(19),lty = c(1), col=c('#D39200'),lwd=4, cex=2,bty='n')
+
+points(data$Time[data$Treatment=="1-clone"], data$Alive[data$Treatment=="1-clone"]/(data$Alive[data$Treatment=="1-clone"]
+                                                                +data$Dead[data$Treatment=="1-clone"]), pch=19, cex=2,col=c('#D39200'))
+points(data$Time[data$Treatment=="5-clone"], data$Alive[data$Treatment=="5-clone"]/(data$Alive[data$Treatment=="5-clone"]
+                                                                    +data$Dead[data$Treatment=="5-clone"]), pch=19, cex=2,col=c('#718B2E'))
+dev.off()

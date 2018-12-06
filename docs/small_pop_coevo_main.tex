@@ -1,0 +1,83 @@
+%Small_pop_coevo_main.tex
+\documentclass [12pt, a4paper, twoside]  {article}
+\usepackage [a4paper, left=30mm, right=30mm, top=20mm, bottom=20mm] {geometry}
+
+\usepackage{epstopdf}% To incorporate .eps illustrations using PDFLaTeX, etc.
+\usepackage[caption=false]{subfig}% Support for small, `sub' figures and tables
+\usepackage[nolists,tablesfirst]{endfloat}% To `separate' figures and tables from text if required
+\usepackage[doublespacing]{setspace}% To produce a `double spaced' document if required
+\setlength\parindent{24pt}% To increase paragraph indentation when line spacing is doubled
+
+\usepackage{natbib}% Citation support using natbib.sty
+%\bibpunct[, ]{[}{]}{,}{n}{,}{,}% Citation support using natbib.sty
+\renewcommand\bibfont{\fontsize{10}{12}\selectfont}% Bibliography support using natbib.sty
+\makeatletter% @ becomes a letter
+\def\NAT@def@citea{\def\@citea{\NAT@separator}}% Suppress spaces between citations using natbib.sty
+\makeatother% @ becomes a symbol again
+
+\usepackage{gensymb}
+
+%%% Paragraph formatting
+\setlength{\parindent}{0pt} %new paragraph indent is 0
+\setlength{\parskip}{1em}	%new paragraphs are indicated by a new line
+\renewcommand{\baselinestretch}{1.2}
+
+%%% Making sure line numbers are included
+\RequirePackage{lineno}
+\usepackage{lineno}
+
+%%% Arranging graphics parameters
+\usepackage [utf8] {inputenc}
+\pagenumbering{gobble}
+
+\title{
+	\raggedright
+	\Huge{\textbf{Small Population Coevolution Experiment}}\\
+	\Large{Draft main text}\\
+	\Large{Jack Common}\\
+	\vspace{.5cm}
+}
+\date{\vspace{-12ex}}
+
+%% My own commands to make things a bit quicker to type
+\newcommand{\super}{\textsuperscript}
+\newcommand{\sub}{\textsubscript}
+
+\begin{document}
+\maketitle
+
+\section*{Abstract}
+
+\section*{Introduction}
+
+\section*{Materials \& Methods}
+
+\subsection*{Bacterial strains \& phage}
+The bacterial strains and phages used in this study have all been described previously. Evolution experiments were carried out using \textit{Pseudomonas aeruginosa} UCBPP-PA14 (WT) and phage DMS3vir \citep{cady2012crispr}. WT \textit{P. aeruginosa} PA14 does not carry any CRISPR spacers targetting DMS3vir. \textit{P. aeuruginosa} UCBPP-PA14 \textit{csy3::lacZ} \citep{zegans2009crispr}, which has a non-functional CRISPR system, was used for overnight amplification of glycerol stocks of phage and plaque assays. An anti-CRISPR phage, DMS3vir-AcrF1 \citep{vanhoute2016diversity}, was used in streak assays.
+
+\subsection*{Evolution experiment}
+Evolution co-culture experiments were established in glass vials by inoculating 6ml of M9 minimal media (supplemented with 0.2\% glucose) with $\sim$1x10\super{6} cfus\ (colony-forming units) from an overnight culture of WT \textit{P.~aeruginosa} PA14. Approximately 1x10\textsuperscript{4} pfus\ (plaque-forming units) of DMS3vir was added to each glass vial. 180$\mu$l of culture was taken from each vial and phage was extracted using chloroform. Phage titres were determined by spotting 5$\mu$l of isolated phage on a top lawn of \textit{P. aeruginosa} PA14 \textit{csy3::lacZ}. The detection limit of phage spot assays is 10\super{2} pfu\ ml\super{--1}. Samples of culture were serially diluted in M9 minimal media, plated on M9 agar (1.5\% w/v), and incubated overnight at 37$\degree{}C$. 
+
+After approximately 24hrs of growth, cfus were counted to determine host densities. Either one or five individual colonies were picked from each replicate and re-suspended in 100 or 500$\mu$l M9 media, respectively. 60$\mu$l of each cell suspension was then used to inoculate 6ml of fresh M9 media. These treatments correspond to the 1- and 5-clone bottleneck treatments. To ensure that phage titres remained approximately constant through each transfer,  60$\mu$l of chloroform-extracted phage from the corresponding replicate was added to the fresh M9 media. The vials were then incubated at $37\degree{}C$ while shaking at 180rpm. The process of sampling, overnight incubation and transfer was repeated until a replicate had no detectable phage for 3 days post-infection (dpi). The experiment was terminated after twenty dpi. Each treatment was performed in twelve independent replicates (\textit{N} = 12).
+
+\subsection*{Determining host immune phenotype}
+Bacterial immunity against ancestral phage was determined at 1, 3, 5 and 7 dpi, using three independent assays as described in Westra \textit{et al} (2015) \cite{westra2015currbiol}. First, bacteria were plated on LB agar, and 24 randomly-selected individual clones per replicate per timepoint were streaked through either DMS3vir or DMS3vir-AcrF1. Clones sensitive to both phage genotypes were scored as `sensitive'; those resistant to the DMS3vir but sensitive to DMS3vir-AcrF1 were scored as `CRISPR'; and those resistant to both were scored as `surface mutant (SM)'. Second, each clone was also grown for 24hrs in M9 media in the presence or absence of DMS3vir, and the OD\sub{600} was measured. Cultures that had a reduced growth rate were scored as sensitive. Third, spacer acquisition in the CRISPR loci was determined by PCR with primers CTAAGCCTTGTACGAAGTCTC and CGCCGAAGGCCAGCGCGCCGGTG (for CRISPR 1) and GCCGTCCAGAAGTCACCACCCG and TCAGCAAGTTACGAGACCTCG (for CRISPR 2). Results from streak assays, OD\sub{600} measurements and PCR were cross-referenced to confirm the phenotype of each clone.
+
+\subsection*{Infectivity and resistance evolution}
+To measure whether host resistance and phage infectivity evolved during the evolution experiment, we isolated phage clones and bacterial clones from replicates where phage persisted for at least 7 days. Due to a trade-off between sample size and the number of timepoints chosen for analysis, we conducted a power analysis using the \texttt{pwr} package \citep{pwr} in R. We derived reference Cohen's $D$ values for a small effect from \cite{common2018PhilTrans} (0.57), and a large effect from \cite{hall2011coevophage} (1.28). This showed that sampling four time points was suitable to detect both effect sizes in the 1-clone treatment (small: $D\sub{1,6}=0.43$; large: $D\sub{1,6}=0.76$)  and 5-clone treatment (small: $D\sub{1,4}=0.30$; large: $D\sub{1,4}=0.56$). Phage extracted from 1, 3, 5, and 7 dpi were subjected to plaque assays. For each replicate and time point, twelve plaques were randomly picked and amplified in 96 well plates containing LB inoculated with \textit{P.~aeruginosa} PA14 \textit{csy3::lacZ }. Twelve colonies from each replicate and timpeoint were picked at random from the 24 clones isolated as part of the immune phenotype assays. To examine the evolution of phage infectivity for each of the eight replicates, the 48 phage clones that were isolated were spotted onto 48 bacterial lawns corresponding to the bacterial clones isolated from the same replicate. Phage were classified as being infective against a particular bacterial clone if a clear lysis zone was visible on the lawn after overnight incubation at 37$\degree{}C$. If no lysis zone was visible, the host was classified as resistant. 
+
+Using this data, we measured the evolution of phage infectivity range as the proportion of bacterial clones that phage from each time point from the same replicate experiment could infect. In a similar way, we measured the evolution of host resistance range as the proportion of all phage genotypes from the same replicate experiment that could be resisted by bacteria from each time point. Infectivity or resistance was analysed in a Generalised Linear Mixed Model (GLM) with genotype as a fixed effect and a binomial family with a logit link function. Mean infectivity or resistance was then analysed for each time point in a Generalised Linear Mixed Model (GLMM) using the lme4 package \citep{lme4}, with time point as a fixed effect and replicate as a random effect. Model coefficients and confidence intervals were transformed from logits to probabilities prior to presentation.
+
+\subsection*{Time-shift experiment}
+Because the susceptibility and resistance of bacterial clones to phage from past, present or future time points was determined (Table 1), our infectivity assay also served as a time-shift experiment \citep{gaba2009TimeShiftReview}. Our phage infectivity and host resistance data was analysed as a time-shift experiment by first scoring each pairwise challenge as \textit{Past}, \textit{Contemporary}, or \textit{Future}, with reference to the phage’s background compared to the host. Infectivity was then analysed in a GLMM with phage background as a fixed effect and replicate as a random effect. Models had a binomial family with a logit link function.
+
+\section*{Results}
+
+\section*{Discussion}
+
+%% Set up the bibliography	
+\bibliographystyle{humannat}				% default "author-year" style for natbib
+\bibliography{../../../references.bib}
+\clearpage
+
+\end{document}

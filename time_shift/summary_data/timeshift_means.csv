@@ -1,0 +1,7 @@
+Treatment,Environment,Group,Mean.Infect,Infect.Lower,Infect.Upper
+1-clone,Past,1,0.01594159,0.007252941,0.03467524
+1-clone,Contemporary,1,0.019503,0.01107786,0.05051236
+1-clone,Future,1,0.04559088,0.023977,0.08499179
+5-clone,Past,1,0.000936006,0.000192204,0.004545133
+5-clone,Contemporary,1,0.0440018,0.009608873,0.1791734
+5-clone,Future,1,0.04664678,0.01127814,0.1734721
