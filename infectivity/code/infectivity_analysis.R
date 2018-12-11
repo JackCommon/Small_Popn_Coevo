@@ -226,12 +226,17 @@ m2 <- glmer(Infected~Timepoint+(1|Timepoint),
             data=monoclonal,
             family=binomial(link="logit"))
 
+m3 <- glmer(Infected~Timepoint+(1|Replicate),
+            data=monoclonal,
+            family=binomial(link="logit"))
 
-sl# Check fitted residuals...
+
+# Check fitted residuals...
 # Heavy clustering
 plot(m1)
 # Much less clustering but some fanning
 plot(m2)
+plot(m3)
 
 
 # Compare AICs
@@ -247,7 +252,7 @@ drop1(m2, test="Chisq")
 # I'll use this one moving forwards due to the AIC and Chisq tests
 
 # Get the model coefficients and confidence intervals
-summary(multcomp::glht(m1))
+summary(multcomp::glht(m3))
 fixed <- coef(m1)
 fixed
 
@@ -257,20 +262,20 @@ logit2prob(fixed[1]+fixed[2])
 logit2prob(fixed[1]+fixed[3])
 logit2prob(fixed[1]+fixed[4])
 
-monoclonal$Timepoint %<>% relevel(ref="1")
-m1 <- glmer(Infected~Timepoint+(1\~),
-            data=monoclonal,
-            family=binomial(link="logit"))
+monoclonal$Timepoint %<>% relevel(ref="7")
+m1 <- glm(Infected~Timepoint,
+          data=monoclonal,
+          family=binomial(link="logit"))
+CI <- confint(m1)
+CI
 
-CIs <- confint(m1, method="Wald")
-CIs
-
-logit2prob(fixed[1]+CIs[2])
-logit2prob(fixed[1]+CIs[6])
-logit2prob(fixed[1]+CIs[3])
-logit2prob(fixed[1]+CIs[7])
-logit2prob(fixed[1]+CIs[4])
-logit2prob(fixed[1]+CIs[8])
+logit2prob(CI[1]); logit2prob(CI[5])
+logit2prob(fixed[1]+CI[2])
+logit2prob(fixed[1]+CI[6])
+logit2prob(fixed[1]+CI[3])
+logit2prob(fixed[1]+CI[7])
+logit2prob(fixed[1]+CI[4])
+logit2prob(fixed[1]+CI[8])
 
 #### 1-clone mean resistance ####
 # Nested models with Timepoint as a fixed effect. Using a negative binomial family
@@ -318,11 +323,17 @@ monoclonal$Timepoint %<>% relevel(ref="1")
 m2 <- glmer(Resisted~Timepoint+(1|Replicate),
             data=monoclonal,
             family=binomial(link="logit"))
-CIs <- confint(m2, method="Wald", parm="beta_")
+CI <- confint(m2, parm="beta_")
 
-logit2prob(CIs)
+logit2prob(CI)
 
-logit2prob(CIs[1])
+logit2prob(fixed[1]+CI[2])
+logit2prob(fixed[1]+CI[6])
+logit2prob(fixed[1]+CI[3])
+logit2prob(fixed[1]+CI[7])
+logit2prob(fixed[1]+CI[4])
+logit2prob(fixed[1]+CI[8])
+
 logit2prob(CIs[1])+logit2prob(CIs[2])
 logit2prob(CIs[1])+logit2prob(CIs[3])
 
@@ -334,7 +345,7 @@ m1 <- glm(Infected~Timepoint,
           data=fiveclonal,
           family=binomial(link="logit"))
 
-m2 <- glmer(Infected~Timepoint,
+m2 <- glmer(Infected~Timepoint+(1|Replicate),
           data=fiveclonal,
           family=binomial(link="logit"))
 
@@ -373,8 +384,11 @@ m1 <- glm(Infected~Timepoint,
           data=fiveclonal,
           family=binomial(link="logit"))
 
-CIs <- confint(m1, method="Wald", level=.95)
-CIs
+CI <- confint(m1)
+CI
+
+logit2prob(CI[1])
+logit2prob(CI[5])
 
 logit2prob(fixed[1]+CIs[2])
 logit2prob(fixed[1]+CIs[6])
@@ -393,7 +407,7 @@ m2 <- glmer(Resisted~Timepoint+(1|Replicate),
             data=fiveclonal,
             family=binomial(link="logit"))
 
-
+summary(m2)
 # Check fitted residuals...
 # Heavy clustering
 plot(m1)
@@ -428,17 +442,16 @@ data$Timepoint %<>% relevel(ref="1")
 m2 <- glmer(Resisted~Timepoint+(1|Replicate),
           data=data,
           family=binomial(link="logit"))
-CIs <- confint(m2, method="Wald", parm="beta_")
+CI <- confint(m2, parm="beta_")
 
-logit2prob(CIs)
+logit2prob(CI)
 
-logit2prob(CIs[1])
-logit2prob(CIs[1])+logit2prob(CIs[2])
-logit2prob(CIs[1])+logit2prob(CIs[3])
-
-logit2prob(CIs[4])
-logit2prob(CIs[4])+logit2prob(CIs[5])
-logit2prob(CIs[4])+logit2prob(CIs[6])
+logit2prob(fixed[1]+CI[2])
+logit2prob(fixed[1]+CI[6])
+logit2prob(fixed[1]+CI[3])
+logit2prob(fixed[1]+CI[7])
+logit2prob(fixed[1]+CI[4])
+logit2prob(fixed[1]+CI[8])
 #### Figures ####
 
 means <- read.csv("./infectivity/summary_data/infectivity_resistance_means.csv")
@@ -459,7 +472,7 @@ infect_plot <- ggplot(aes(y=Mean.Infect, x=Timepoint, group=Group), data=means)+
         axis.text = element_text(size=14),
         strip.text = element_text(size=14, face="bold", margin=margin(2,0,2,0,"mm")))+
   scale_y_continuous(breaks=c(seq(0, 1, 0.1)))+
-  coord_cartesian(ylim=c(0,1))+
+  coord_cartesian(ylim=c(0,.5))+
   NULL
 infect_plot
 
@@ -486,8 +499,6 @@ infect_resist_evo <- plot_grid(infect_plot+labs(x=""), resist_plot,
                                nrow=2, align = "hv", labels = c("A", "B"))
 
 infect_resist_evo
-
-detach(package:cowplot)
 
 ggsave("infect_resist_evolution.png", infect_resist_evo, path="./figs/",
        device="png", dpi=300, width=30, height = 24, units=c("cm"))
