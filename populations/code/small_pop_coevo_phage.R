@@ -266,6 +266,44 @@ sum.fig
 ggsave("phage_fig.png", sum.fig, path="./figs/", device="png",
        width=28, height=20, unit=c("cm"), dpi=300)
 
+#### Models of phage + bacteria titres ####
+phage$bottleneck %<>% relevel(ref="5-clone")
+phage$log.cfu <- log(phage$cfu+1)
+phage$log.pfu <- log(phage$pfu+1)
+
+m1 <- glm(log.pfu~log.cfu, data=phage)
+m2 <- glm(log.pfu~log.cfu*bottleneck, data=phage)
+
+par(mfrow=c(2,2))
+plot(m1)
+plot(m2)
+
+AIC(m1, m2) %>% compare_AICs()
+anova(m1, m2, test="Chisq")
+
+summary(m2)
+confint(m2)
+
+association_plot <- ggplot(aes(y=pfu+1, x=cfu+1), data=phage)+
+  geom_smooth(method="lm", formula = y~x, se=T, fullrange=T)+
+  geom_point()+
+  #stat_smooth(method="lm", formula = y~1, se=T, linetype=2, colour="grey2")+ # This gives a null slope
+  facet_wrap(~bottleneck)+
+  theme_cowplot()+
+  scale_y_continuous(trans = 'log10',
+                     breaks = trans_breaks('log10', function(x) 10^x),
+                     labels = trans_format('log10', math_format(10^.x)))+
+  scale_x_continuous(trans = 'log10',
+                     breaks = trans_breaks('log10', function(x) 10^x),
+                     labels = trans_format('log10', math_format(10^.x)))+
+  coord_cartesian(ylim=c(1,1e+10))+
+  labs(x=expression(bold("C.f.u. ml"*{}^{-1}*"")), y=expression(bold("P.f.u. ml"*{}^{-1}*"")))+
+  theme(strip.text.x = element_text(face="bold"))+
+  NULL
+
+quartz()
+association_plot
+
 #### Survival analysis #####
 
 # Need to load these packages after the above as some important functions can be 
@@ -288,6 +326,7 @@ names(phage)
 
 #### Keplan-Meier graph ####
 summary(KM<-survfit(Surv(time_to_death,status)~bottleneck))
+print(KM, print.rmean=TRUE)
 
 jpeg("./figs/survplot.jpg", width=20, height=15, units="in", res=300)
 par(mfrow=c(1,1), xpd=TRUE, oma=c(1.5,2.5,1,1), mai=c(1,1,1,1.2), bty="l", pty="s")
@@ -308,6 +347,7 @@ dev.off()
 
 #### Cox proportional hazards model ####
 model3<-coxph(Surv(time_to_death,status)~bottleneck)
+model3
 summary(model3)
 
 model3$loglik

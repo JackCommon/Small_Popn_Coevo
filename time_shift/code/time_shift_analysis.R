@@ -306,10 +306,10 @@ data %<>% na.exclude # include to get marginal and conditional R2 from models
 monoclonal <- data %>% filter(Treatment==c("1-clone"))
 fiveclonal <- data %>% filter(Treatment==c("5-clone"))
 
-monoclonal2 <- filter(monoclonal, Host.Timepoint!="7") %>% 
-  filter(Phage.Timepoint!="7")
-fiveclonal2 <- filter(fiveclonal, Host.Timepoint!="7") %>% 
-  filter(Phage.Timepoint!="7")
+monoclonal2 <- filter(monoclonal, Host.Timepoint!="1") %>% 
+  filter(Phage.Timepoint!="1")
+fiveclonal2 <- filter(fiveclonal, Host.Timepoint!="1") %>% 
+  filter(Phage.Timepoint!="1")
 
 #### Analysis - 1-clone ####
 # Host environment-only model
@@ -435,46 +435,69 @@ logit2prob(fixed3[1]+CIs.wald[6])
 fiveclonal$Phage.Background %<>% relevel(ref="Past")
 #### Analysis - Comparing 
 
-#### Analysis - bewteen treatments ####
-m1 <- glmer(Infected~Treatment+(1|Replicate),
+#### Analysis - Full data ####
+m1 <- glmer(Infected~Phage.Background*Treatment+(1|Replicate)+(Phage.Timepoint|Host.Timepoint),
             data=data, family=binomial)
-
-summary(multcomp::glht(m1))
-summary(multcomp::cftest(m1))
 summary(m1)
-plot(m1)
+anova(m1, test="Chisq")
 r.squaredGLMM(m1)
 
-m2 <- glmer(Infected~Phage.Background+(1|Replicate),
-            data=data, family=binomial)
-summary(multcomp::glht(m2))
-summary(multcomp::cftest(m2))
+plot(m1)
+
+fixed1 <- fixef(m1)
+logit2prob(fixed1[1])
+logit2prob(fixed1[1]+fixed1[2])
+logit2prob(fixed1[1]+fixed1[3])
+logit2prob(fixed1[1]+fixed1[4])
+logit2prob(fixed1[1]+fixed1[5])
+logit2prob(fixed1[1]+fixed1[6])
+
+multcomp::cftest(m1)
+CIs.wald <- confint(m1, parm="beta_", method="Wald")
+fixed1
+CIs.wald
+
+logit2prob(fixed1[1]+CIs.wald[2])
+logit2prob(fixed1[1]+CIs.wald[8])
+
+logit2prob(fixed1[1]+CIs.wald[3])
+logit2prob(fixed1[1]+CIs.wald[9])
+
+logit2prob(fixed1[1]+CIs.wald[4])
+logit2prob(fixed1[1]+CIs.wald[10])
+
+### Dropping T1 data
+
+m2 <- glmer(Infected~Phage.Background*Treatment+(1|Replicate)+(Phage.Timepoint|Host.Timepoint),
+            data=filter(data, Host.Timepoint!="1", Phage.Timepoint!="1"), family=binomial)
 summary(m2)
+anova(m2, test="Chisq")
+
 plot(m2)
-r.squaredGLMM(m2)
 
-m3 <- glmer(Infected~Phage.Background*Treatment+(1|Replicate),
-            data=data, family=binomial)
-summary(multcomp::glht(m3))
-summary(multcomp::cftest(m3))
-summary(m3)
-plot(m3)
-r.squaredGLMM(m3)
-
-m4 <- glmer(Infected~Phage.Background*Treatment+(Treatment|Replicate),
-            data=data, family=binomial)
-summary(multcomp::glht(m4))
-summary(multcomp::cftest(m4))
-summary(m4)
-plot(m4)
-r.squaredGLMM(m4)
+fixed2 <- fixef(m2)
+logit2prob(fixed2[1])
+logit2prob(fixed2[1]+fixed2[2])
+logit2prob(fixed2[1]+fixed2[3])
+logit2prob(fixed2[1]+fixed2[4])
 
 
-anova(m1, m2, m3, m4, test="Chisq")
-anova(m2, m4, test="Chisq")
-drop1(m3, m4, test="Chisq")
-#### Figure - Means within treatments ####
-timeshift_means <- read.csv("./time_shift/summary_data/timeshift_means.csv", header=T)
+multcomp::cftest(m2)
+CIs.wald <- confint(m2, parm="beta_", method="Wald")
+fixed2
+CIs.wald
+
+logit2prob(fixed2[1]+CIs.wald[2])
+logit2prob(fixed2[1]+CIs.wald[8])
+
+logit2prob(fixed2[1]+CIs.wald[3])
+logit2prob(fixed2[1]+CIs.wald[9])
+
+logit2prob(fixed2[1]+CIs.wald[4])
+logit2prob(fixed2[1]+CIs.wald[10])
+
+#### Figure - Timeshift means ####
+timeshift_means <- read.csv("./time_shift/summary_data/timeshift_means_fullmod.csv", header=T)
 
 timeshift_means$Environment %<>% relevel(ref="Future")
 timeshift_means$Environment %<>% relevel(ref="Contemporary")
@@ -490,92 +513,54 @@ p1 <- ggplot(aes(y=Mean.Infect, x=Environment, group=Group), data=timeshift_mean
   facet_wrap(~Treatment)+
   cowplot::theme_cowplot()+
   labs(x="Phage background", y="Proportion of\nhosts infected")+
-  theme(axis.title = element_text(face="bold", size=16))+
-  theme(axis.text = element_text(size=14))+
-  theme(legend.title = element_text(face='bold', size=14))+
-  theme(legend.title.align = 0.5)+
-  theme(legend.position = 'right')+
-  theme(legend.key.width = unit(2, 'cm'))+
-  theme(legend.key.height = unit(1, 'cm'))+
-  theme(legend.text = element_text(size=14))+
+  #ggtitle("Including data from 1 dpi")+
+  theme(plot.title = element_text(colour = "red"),
+        axis.title = element_text(face="bold", size=16),
+        axis.text = element_text(size=14),
+        legend.title = element_text(face='bold', size=14),
+        legend.title.align = 0.5,
+        legend.position = 'right',
+        legend.key.width = unit(2, 'cm'),
+        legend.key.height = unit(1, 'cm'),
+        legend.text = element_text(size=14))+
   
-  scale_y_continuous(breaks=c(seq(0, 1, 0.05)))+
-  coord_cartesian(ylim=c(0,.25))+
+  scale_y_continuous(breaks=c(seq(0, 1, 0.02)))+
+  coord_cartesian(ylim=c(0,.1))+
   NULL
 p1
 
 ggsave("timeshift.png", p1, path="./figs/",
        dpi=300, device="png", width=25, height=12, unit=c("cm"))
-#### By host timepoint ####
+#### Contemporary interactions ####
 
-m1 <- glmer(Infected~Host.Timepoint+(1|Host.Timepoint), data=filter(monoclonal, Phage.Background=="Contemporary"), family=binomial)
-plot(m1)
-summary(m1)
-multcomp::cftest(m1)
+# data$Treatment %<>% relevel(ref="5-clone")
+# data$Treatment %<>% relevel(ref="1-clone")
 
-m2 <- glmer(Infected~Host.Timepoint+(1|Replicate), data=filter(monoclonal, Phage.Background=="Contemporary"), family=binomial)
-plot(m2)
-summary(multcomp::cftest(m2))
-
-m3 <- glmer(Infected~Host.Timepoint+(1|Phage.Genotype), data=filter(monoclonal, Phage.Background=="Contemporary"), 
-            family=binomial)
-
-m3 <- glmer(Infected~Host.Timepoint+(1|Replicate)+(1|Phage.Timepoint),
-            data=filter(monoclonal, Phage.Background=="Contemporary"), family=binomial)
-r.squaredGLMM(m3)
-plot(m3)
+m3 <- glmer(Infected~Host.Timepoint*Treatment+(1|Replicate)+(1|Phage.Timepoint),
+            data=filter(data, Phage.Background=="Contemporary"), family=binomial)
 summary(m3)
-multcomp::cftest(m3)
 
-fixed <- fixef(m3)
+fixed3 <- fixef(m3)
+logit2prob(fixed3[1])
+logit2prob(fixed3[1]+fixed3[2])
+logit2prob(fixed3[1]+fixed3[3])
+logit2prob(fixed3[1]+fixed3[4])
 
-logit2prob(fixed[1])
-logit2prob(fixed[1]+fixed[2])
-logit2prob(fixed[1]+fixed[3])
-logit2prob(fixed[1]+fixed[4])
+CIs.m3 <- confint(m3, method="Wald", parm="beta_")
+CIs.m3
 
-monoclonal$Host.Timepoint %<>% relevel(ref="7")
-monoclonal$Host.Timepoint %<>% relevel(ref="5")
-monoclonal$Host.Timepoint %<>% relevel(ref="3")
-monoclonal$Host.Timepoint %<>% relevel(ref="1")
+logit2prob(fixed3[1]+CIs.m3[2])
+logit2prob(fixed3[1]+CIs.m3[10])
 
-m3 <- glmer(Infected~Host.Timepoint+(1|Replicate)+(1|Phage.Timepoint),
-            data=filter(monoclonal, Phage.Background=="Contemporary"), family=binomial)
+logit2prob(fixed3[1]+CIs.m3[3])
+logit2prob(fixed3[1]+CIs.m3[11])
 
-fixed <- fixef(m3)
-CIs <- confint.merMod(m3, parm="beta_")
-CIs
+logit2prob(fixed3[1]+CIs.m3[4])
+logit2prob(fixed3[1]+CIs.m3[12])
 
-logit2prob(fixed[1]+CIs[2])
-logit2prob(fixed[1]+CIs[6])
-logit2prob(fixed[1]+CIs[3])
-logit2prob(fixed[1]+CIs[7])
-logit2prob(fixed[1]+CIs[4])
-logit2prob(fixed[1]+CIs[8])
+logit2prob(fixed3[1]+CIs.m3[5])
+logit2prob(fixed3[1]+CIs.m3[13])
 
-fiveclonal$Host.Timepoint %<>% relevel(ref="7")
-fiveclonal$Host.Timepoint %<>% relevel(ref="5")
-fiveclonal$Host.Timepoint %<>% relevel(ref="3")
-fiveclonal$Host.Timepoint %<>% relevel(ref="1")
-
-m3 <- glmer(Infected~Host.Timepoint+(1|Replicate)+(1|Phage.Timepoint),
-            data=filter(fiveclonal, Phage.Background=="Contemporary"), family=binomial)
-
-fixed <- fixef(m3)
-logit2prob(fixed[1])
-logit2prob(fixed[1]+fixed[2])
-logit2prob(fixed[1]+fixed[3])
-logit2prob(fixed[1]+fixed[4])
-
-CIs <- confint.merMod(m3, parm="beta_")
-CIs
-
-logit2prob(fixed[1]+CIs[2])
-logit2prob(fixed[1]+CIs[6])
-logit2prob(fixed[1]+CIs[3])
-logit2prob(fixed[1]+CIs[7])
-logit2prob(fixed[1]+CIs[4])
-logit2prob(fixed[1]+CIs[8])
 
 
 cont_means <- read.csv("./time_shift/summary_data/contemporary_means.csv", header=T)
@@ -610,17 +595,36 @@ last_plot()
 
 ggsave("contemporary_means.png", p3, path="./figs/",
        dpi=300, device="png", width=24, height=12, unit=c("cm"))
-#### Test area ####
-test_data <- data
-test_data$Host.Timepoint %<>% as.character() %>% as.numeric()
+#### Figure - Contemporary means ####
+cont_means <- read.csv("./time_shift/summary_data/contemporary_means.csv", header=T)
 
-binomial_smooth <- function(...) {
-  geom_smooth(method = "glm", method.args = list(family = "binomial"), ...)
-}
-
-testplot <- ggplot(aes(x=Host.Timepoint, y=Infected), data=filter(test_data, Phage.Background=="Contemporary"))+
-  geom_jitter(height = 0.05) +
-  binomial_smooth()+
+p2 <- ggplot(aes(y=Mean.Infect, x=Timepoint, group=Group), data=cont_means)+
+  geom_point(size=2)+
+  geom_errorbar(aes(ymin=Infect.Lower, ymax=Infect.Upper),
+                width=0, size=1)+
+  geom_path(stat="identity", linetype=2, size=.8)+
   facet_wrap(~Treatment)+
+  cowplot::theme_cowplot()+
+  labs(x="Days post-infection", y="Proportion of\nhosts infected")+
+  scale_x_discrete(breaks=c("t1", "t3", "t5", "t7"),
+                   labels=c("1", "3", "5", "7"))+
+  coord_cartesian(ylim=c(0,.5))+
+  scale_y_continuous(breaks=c(seq(0,1,0.1)))+
+  #scale_fill_discrete(name="Host timepoint\n(days post-infection)",
+  #                   breaks=c("t1", "t4", "t9"),
+  #                  labels=c("1", "4", "9"))+
+  
+  theme(axis.title = element_text(face="bold", size=16))+
+  theme(axis.text = element_text(size=14))+
+  theme(legend.title = element_text(face='bold', size=14))+
+  theme(legend.title.align = 0.5)+
+  theme(legend.position = 'right')+
+  theme(legend.key.width = unit(1, 'cm'))+
+  theme(legend.key.height = unit(1, 'cm'))+
+  theme(legend.text = element_text(size=14))+
   NULL
-testplot
+
+p2
+
+ggsave("contemporary_means.png", p2, path="./figs/",
+       dpi=300, device="png", width=25, height=12, unit=c("cm"))

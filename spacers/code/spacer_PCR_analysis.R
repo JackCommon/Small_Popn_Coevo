@@ -396,7 +396,7 @@ spacer_numbers$SpacerNumber %<>% relevel(ref="Zero")
 
 spacer_no <- ggplot(aes(x=Timepoint, y=Mean), data=spacer_numbers)+
   geom_col(position=position_dodge(.9), aes(fill=SpacerNumber), colour="grey")+
-  geom_errorbar(aes(ymin=Lower, ymax=Upper, group=SpacerNumber), width=0, size=.8, position = position_dodge(.9))+
+  #geom_errorbar(aes(ymin=Lower, ymax=Upper, group=SpacerNumber), width=0, size=.8, position = position_dodge(.9))+
   coord_cartesian(ylim=c(0,1))+
   facet_wrap(~Treatment)+
   theme_cowplot()+
