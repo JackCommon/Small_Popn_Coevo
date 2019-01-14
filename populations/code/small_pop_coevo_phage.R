@@ -340,7 +340,7 @@ axis(1, at=10, lab="Days post-infection", tcl=0, line=2, cex.axis=3)
 axis(2, tcl=-0.1, pos=-0, cex.axis=1, las=2, lwd=c(3), cex.axis = 2)
 axis(2, at=0.5, lab="Proportion of phage\npopulations surviving", line=4, cex.axis=3, tcl=0)
 
-legend(11.5,0.7, title=c("Bottleneck"),
+legend(11.5,0.7, title=c("Treatment"),
        legend=c("1-clone", "5-clone"), 
        bty="o", lty=c(1,3,5), lwd=c(5,5,5), cex=3, adj=0)
 dev.off()
